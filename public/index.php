@@ -16,7 +16,7 @@ kop('Fiets huren');
   <?php endif; ?>
 </section>
 
-<section>
+<section class="band">
   <h2>Onze fietsen</h2>
   <div class="grid">
     <?php foreach ($fietsen as $f): ?>

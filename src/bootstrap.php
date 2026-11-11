@@ -179,10 +179,25 @@ function voet(): void
     ?>
 </main>
 <footer>
-  <div class="wrap">
-    <span>&copy; <?= date('Y') ?> JFBP</span>
-    <a href="/privacy.php">Privacyverklaring</a>
+  <div class="wrap kolommen">
+    <div>
+      <h4>JFBP Fietsverhuur</h4>
+      <p>[Korte omschrijving: fietsen huren in de regio, eenvoudig online reserveren.]</p>
+    </div>
+    <div>
+      <h4>Snel naar</h4>
+      <ul>
+        <li><a href="/reserveren.php">Fiets reserveren</a></li>
+        <li><a href="/account.php">Mijn reserveringen</a></li>
+        <li><a href="/privacy.php">Privacyverklaring</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <p>[Adres]<br>[Postcode Plaats]<br>[Telefoonnummer]<br>[E-mailadres]</p>
+    </div>
   </div>
+  <div class="onderbalk"><div class="wrap">&copy; <?= date('Y') ?> JFBP</div></div>
 </footer>
 </body>
 </html>

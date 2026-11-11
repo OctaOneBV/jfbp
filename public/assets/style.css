@@ -1,0 +1,64 @@
+:root{--bg:#ffffff;--zacht:#f4f6f8;--tekst:#1b2430;--grijs:#5b6675;--accent:#1f6f8b;--accent-tekst:#ffffff;--rand:#d9dfe6;--ok:#1d7a46;--ok-bg:#e7f5ec;--fout:#b3261e;--fout-bg:#fdecea;--info-bg:#e8f2f6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--zacht:#161d26;--tekst:#e6ebf1;--grijs:#9aa6b4;--accent:#5fb3cf;--accent-tekst:#0f141b;--rand:#2a3646;--ok:#7fd3a2;--ok-bg:#15291f;--fout:#ff8a80;--fout-bg:#2e1716;--info-bg:#14232c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tekst);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px;width:100%}
+header{border-bottom:1px solid var(--rand);background:var(--bg)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;min-height:64px;gap:12px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px;letter-spacing:.02em;text-decoration:none;color:var(--tekst)}
+nav{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+nav a{text-decoration:none;color:var(--grijs);font-weight:500}
+nav a:hover{color:var(--accent)}
+.inline{display:inline;margin:0}
+button.link{background:none;border:0;padding:0;font:inherit;color:var(--grijs);font-weight:500;cursor:pointer}
+button.link:hover{color:var(--accent)}
+.inhoud{flex:1;padding-top:32px;padding-bottom:56px}
+h1{font-size:clamp(26px,5vw,36px);line-height:1.2;margin:0 0 12px;letter-spacing:-.01em}
+h2{font-size:24px;margin:40px 0 14px}
+.lead{color:var(--grijs);margin:0 0 24px}
+.klein,small{font-size:14px;color:var(--grijs)}
+.knop{display:inline-block;background:var(--accent);color:var(--accent-tekst);padding:11px 20px;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid var(--accent);font:inherit;font-weight:600;cursor:pointer}
+.knop:hover{filter:brightness(1.08)}
+.knop.secundair{background:transparent;color:var(--accent)}
+.knop.klein{padding:6px 14px;font-size:15px;color:var(--accent-tekst)}
+nav .knop.klein:hover{color:var(--accent-tekst)}
+.hero{padding:40px 0 16px}
+.hero p{font-size:19px;color:var(--grijs);max-width:56ch;margin:0 0 24px}
+.hero .knop{margin:0 8px 8px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.kaart{background:var(--zacht);border:1px solid var(--rand);border-radius:12px;padding:22px}
+.kaart h3{margin:0 0 6px;font-size:19px}
+.kaart p{margin:0 0 8px;color:var(--grijs)}
+.prijs{font-weight:700;color:var(--tekst)!important}
+.stappen{padding-left:20px}
+.stappen li{margin-bottom:6px}
+.melding{padding:12px 16px;border-radius:8px;margin:0 0 24px;background:var(--ok-bg);color:var(--ok);font-weight:500}
+.melding.info{background:var(--info-bg);color:var(--tekst)}
+.melding.fout{background:var(--fout-bg);color:var(--fout)}
+.formulier{max-width:440px}
+form label{display:block;margin-bottom:16px;font-weight:600}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=date],input:not([type]),select{display:block;width:100%;margin-top:6px;padding:10px 12px;font:inherit;font-weight:400;color:var(--tekst);background:var(--bg);border:1px solid var(--rand);border-radius:8px}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.fout{display:block;color:var(--fout);font-weight:500;font-size:15px;margin-top:4px}
+.vinkje{display:flex!important;gap:10px;align-items:flex-start;font-weight:400!important}
+.vinkje input{margin-top:5px}
+fieldset{border:0;padding:0;margin:0 0 32px}
+legend{font-size:20px;font-weight:700;margin-bottom:12px;padding:0}
+.keuze{display:flex!important;flex-direction:column;gap:4px;cursor:pointer;font-weight:400!important;margin:0!important;position:relative}
+.keuze input{position:absolute;top:18px;right:18px;width:18px;height:18px;accent-color:var(--accent)}
+.keuze .titel{font-weight:700;font-size:19px}
+.keuze span{color:var(--grijs)}
+.keuze:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.rij{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;max-width:520px}
+.lijst{display:grid;gap:10px;max-width:520px}
+.keuze-regel{display:flex!important;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--rand);border-radius:10px;cursor:pointer;font-weight:400!important;margin:0!important}
+.keuze-regel input{margin-top:6px;accent-color:var(--accent)}
+.keuze-regel:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.tabel{overflow-x:auto;margin-bottom:24px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--rand);vertical-align:top}
+th{font-size:14px;color:var(--grijs);font-weight:600}
+.tekst{max-width:70ch}
+footer{border-top:1px solid var(--rand);padding:24px 0;color:var(--grijs);font-size:15px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}

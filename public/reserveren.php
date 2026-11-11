@@ -10,14 +10,15 @@ $vandaag = new DateTimeImmutable('today');
 $laatste = $vandaag->modify('+' . MAX_DAGEN_VOORUIT . ' days');
 
 $fouten = [];
-$invoer = ['fiets' => 0, 'startdatum' => $vandaag->modify('+1 day')->format('Y-m-d'), 'duur' => 1, 'locatie' => 0, 'vertrek' => '', 'aankomst' => ''];
+$invoer = ['fiets' => 0, 'startdatum' => $vandaag->modify('+1 day')->format('Y-m-d'), 'duur' => 1, 'afhaal' => 0, 'terugbreng' => 0, 'vertrek' => '', 'aankomst' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_controleren();
     $invoer['fiets']      = (int) ($_POST['fiets'] ?? 0);
     $invoer['startdatum'] = (string) ($_POST['startdatum'] ?? '');
     $invoer['duur']       = (int) ($_POST['duur'] ?? 0);
-    $invoer['locatie']    = (int) ($_POST['locatie'] ?? 0);
+    $invoer['afhaal']     = (int) ($_POST['afhaal'] ?? 0);
+    $invoer['terugbreng'] = (int) ($_POST['terugbreng'] ?? 0);
     $invoer['vertrek']    = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['vertrek'] ?? '')));
     $invoer['aankomst']   = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['aankomst'] ?? '')));
 
@@ -31,8 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset(HUURDUUR[$invoer['duur']])) {
         $fouten['duur'] = 'Kies een huurduur.';
     }
-    if (!in_array($invoer['locatie'], array_map('intval', array_column($locaties, 'id')), true)) {
-        $fouten['locatie'] = 'Kies een afhaallocatie.';
+    $locatieIds = array_map('intval', array_column($locaties, 'id'));
+    if (!in_array($invoer['afhaal'], $locatieIds, true)) {
+        $fouten['afhaal'] = 'Kies een afhaallocatie.';
+    }
+    if (!in_array($invoer['terugbreng'], $locatieIds, true)) {
+        $fouten['terugbreng'] = 'Kies een terugbrenglocatie.';
     }
     foreach (['vertrek', 'aankomst'] as $veld) {
         if (mb_strlen($invoer[$veld]) > 150) {
@@ -62,16 +67,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fouten['startdatum'] = 'De ' . $fiets['naam'] . ' is in (een deel van) deze periode al verhuurd. Kies een andere datum of fiets.';
                 $pdo->rollBack();
             } else {
-                $pdo->prepare('INSERT INTO reserveringen (gebruiker_id, fiets_id, locatie_id, startdatum, einddatum, aantal_dagen, vertrek, aankomst) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-                    ->execute([$gebruiker['id'], $fiets['id'], $invoer['locatie'], $start->format('Y-m-d'), $eind->format('Y-m-d'), $invoer['duur'],
+                $pdo->prepare('INSERT INTO reserveringen (gebruiker_id, fiets_id, afhaal_locatie_id, terugbreng_locatie_id, startdatum, einddatum, aantal_dagen, vertrek, aankomst) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+                    ->execute([$gebruiker['id'], $fiets['id'], $invoer['afhaal'], $invoer['terugbreng'], $start->format('Y-m-d'), $eind->format('Y-m-d'), $invoer['duur'],
                                $invoer['vertrek'] ?: null, $invoer['aankomst'] ?: null]);
                 $id = (int) $pdo->lastInsertId();
                 $pdo->commit();
 
-                // Fietsroute buiten de transactie berekenen: een trage of mislukte Google-aanroep mag de reservering niet blokkeren.
+                // Fietsroute buiten de transactie berekenen: een trage of mislukte routedienst mag de reservering niet blokkeren.
                 if ($invoer['vertrek'] !== '' && ($route = bereken_fietsroute($invoer['vertrek'], $invoer['aankomst']))) {
-                    $pdo->prepare('UPDATE reserveringen SET route_seconden = ?, route_meters = ? WHERE id = ?')
-                        ->execute([$route['seconden'], $route['meters'], $id]);
+                    route_opslaan($id, $route);
                 }
                 flash('Je reservering is geplaatst.');
                 redirect('/reservering.php?id=' . $id);
@@ -86,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 kop('Fiets reserveren');
 ?>
 <h1>Fiets reserveren</h1>
-<p class="lead">Hallo <?= e($gebruiker['naam']) ?>, kies hieronder je fiets, de huurperiode en waar je hem ophaalt.</p>
+<p class="lead">Hallo <?= e($gebruiker['naam']) ?>, kies hieronder je fiets, de huurperiode en waar je hem ophaalt en terugbrengt.</p>
 
 <form method="post" class="reserveren">
   <?= csrf_veld() ?>
@@ -125,16 +129,28 @@ kop('Fiets reserveren');
   </fieldset>
 
   <fieldset>
-    <legend>3. Kies een afhaallocatie</legend>
-    <div class="lijst">
-      <?php foreach ($locaties as $l): ?>
-        <label class="keuze-regel">
-          <input type="radio" name="locatie" value="<?= (int) $l['id'] ?>" <?= $invoer['locatie'] === (int) $l['id'] ? 'checked' : '' ?> required>
-          <span><strong><?= e($l['naam']) ?></strong><br><small><?= e($l['adres']) ?></small></span>
-        </label>
-      <?php endforeach; ?>
+    <legend>3. Afhalen en terugbrengen</legend>
+    <div class="rij">
+      <label>Afhaallocatie
+        <select name="afhaal" required>
+          <option value="">Kies een locatie…</option>
+          <?php foreach ($locaties as $l): ?>
+            <option value="<?= (int) $l['id'] ?>" <?= $invoer['afhaal'] === (int) $l['id'] ? 'selected' : '' ?>><?= e($l['naam']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <?= fout($fouten, 'afhaal') ?>
+      </label>
+      <label>Terugbrenglocatie
+        <select name="terugbreng" required>
+          <option value="">Kies een locatie…</option>
+          <?php foreach ($locaties as $l): ?>
+            <option value="<?= (int) $l['id'] ?>" <?= $invoer['terugbreng'] === (int) $l['id'] ? 'selected' : '' ?>><?= e($l['naam']) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <?= fout($fouten, 'terugbreng') ?>
+      </label>
     </div>
-    <?= fout($fouten, 'locatie') ?>
+    <p class="klein">Je mag de fiets op een andere locatie terugbrengen dan waar je hem ophaalt.</p>
   </fieldset>
 
   <fieldset>

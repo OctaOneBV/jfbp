@@ -4,10 +4,11 @@ require __DIR__ . '/../src/bootstrap.php';
 $gebruiker = login_vereist();
 
 $st = db()->prepare(
-    'SELECT r.id, r.vertrek, r.aankomst, r.route_seconden, r.startdatum, r.einddatum, r.aantal_dagen, f.naam AS fiets, f.prijs_per_dag, l.naam AS locatie, l.adres
+    'SELECT r.id, r.vertrek, r.aankomst, r.route_seconden, r.startdatum, r.einddatum, r.aantal_dagen, f.naam AS fiets, f.prijs_per_dag, la.naam AS afhaal, lt.naam AS terugbreng
        FROM reserveringen r
        JOIN fietsen f  ON f.id = r.fiets_id
-       JOIN locaties l ON l.id = r.locatie_id
+       JOIN locaties la ON la.id = r.afhaal_locatie_id
+       JOIN locaties lt ON lt.id = r.terugbreng_locatie_id
       WHERE r.gebruiker_id = ?
       ORDER BY r.startdatum DESC'
 );
@@ -22,7 +23,7 @@ kop('Mijn reserveringen');
 <?php else: ?>
   <div class="tabel">
     <table>
-      <thead><tr><th>Fiets</th><th>Ophalen</th><th>Terugbrengen</th><th>Duur</th><th>Afhaallocatie</th><th>Prijs</th><th>Fietstocht</th></tr></thead>
+      <thead><tr><th>Fiets</th><th>Ophalen</th><th>Terugbrengen</th><th>Duur</th><th>Afhalen → terugbrengen</th><th>Prijs</th><th>Fietstocht</th></tr></thead>
       <tbody>
       <?php foreach ($reserveringen as $r): ?>
         <tr>
@@ -30,7 +31,7 @@ kop('Mijn reserveringen');
           <td><?= datum($r['startdatum']) ?></td>
           <td><?= datum($r['einddatum']) ?></td>
           <td><?= e(HUURDUUR[(int) $r['aantal_dagen']] ?? $r['aantal_dagen'] . ' dagen') ?></td>
-          <td><?= e($r['locatie']) ?><br><small><?= e($r['adres']) ?></small></td>
+          <td><?= e($r['afhaal']) ?> → <?= e($r['terugbreng']) ?></td>
           <td><?= euro((float) $r['prijs_per_dag'] * (int) $r['aantal_dagen']) ?></td>
           <td><?php if ($r['vertrek'] !== null): ?><?= e($r['vertrek']) ?> → <?= e($r['aankomst']) ?><?= $r['route_seconden'] !== null ? '<br><small>' . duur_tekst((int) $r['route_seconden']) . '</small>' : '' ?><br><?php endif; ?><a href="/reservering.php?id=<?= (int) $r['id'] ?>">Bekijken</a></td>
         </tr>

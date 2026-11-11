@@ -10,9 +10,11 @@ $config += [
     'db_user' => getenv('JFBP_DB_USER') ?: 'jfbp',
     'db_pass' => getenv('JFBP_DB_PASS') ?: '',
     'sitenaam' => 'JFBP Fietsverhuur',
-    'google_routes_key' => getenv('JFBP_GOOGLE_ROUTES_KEY') ?: '',
-    'google_embed_key'  => getenv('JFBP_GOOGLE_EMBED_KEY') ?: '',
-    'google_routes_url' => 'https://routes.googleapis.com/directions/v2:computeRoutes',
+    // Open-source route- en kaartdiensten (zie src/route.php). Voor productie bij voorkeur eigen servers.
+    'geocoder_url'     => getenv('JFBP_GEOCODER_URL') ?: 'https://nominatim.openstreetmap.org/search',
+    'routing_url'      => getenv('JFBP_ROUTING_URL') ?: 'https://brouter.de/brouter',
+    'route_user_agent' => getenv('JFBP_ROUTE_USER_AGENT') ?: 'fietsverhuur-website/1.0',
+    'tegel_url'        => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
 ];
 require __DIR__ . '/route.php';
 
@@ -23,7 +25,8 @@ const MAX_DAGEN_VOORUIT = 90;
 date_default_timezone_set('Europe/Amsterdam');
 
 // ---------- beveiligingsheaders ----------
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; frame-src https://www.google.com; frame-ancestors 'none'; base-uri 'none'");
+$tegelHost = parse_url($config['tegel_url'], PHP_URL_SCHEME) . '://' . parse_url($config['tegel_url'], PHP_URL_HOST);
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data: $tegelHost; style-src 'self'; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 header('X-Frame-Options: DENY');
 
 // ---------- sessie ----------
@@ -141,7 +144,7 @@ function client_ip(): string
 }
 
 // ---------- opmaak ----------
-function kop(string $titel): void
+function kop(string $titel, bool $kaart = false): void
 {
     global $config;
     $g = gebruiker();
@@ -154,6 +157,11 @@ function kop(string $titel): void
 <title><?= e($titel) ?> · <?= e($config['sitenaam']) ?></title>
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<?php if ($kaart): ?>
+<link rel="stylesheet" href="/assets/leaflet/leaflet.css">
+<script src="/assets/leaflet/leaflet.js" defer></script>
+<script src="/assets/kaart.js" defer></script>
+<?php endif; ?>
 </head>
 <body>
 <header>

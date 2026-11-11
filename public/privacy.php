@@ -15,11 +15,15 @@ kop('Privacyverklaring');
     <li>Naam, e-mailadres en (optioneel) telefoonnummer, om je account en reserveringen te beheren.</li>
     <li>Je wachtwoord, uitsluitend versleuteld (gehasht) opgeslagen.</li>
     <li>Je reserveringen: fiets, periode en afhaallocatie.</li>
+    <li>Optioneel: de vertrek- en aankomstplaats van je fietstocht.</li>
     <li>Het IP-adres bij mislukte inlogpogingen, maximaal 24 uur, om misbruik te voorkomen.</li>
   </ul>
 
   <h2>Waarom</h2>
   <p>We gebruiken deze gegevens alleen om de huurovereenkomst uit te voeren en om contact met je op te nemen over je reservering.</p>
+
+  <h2>Google Maps</h2>
+  <p>Vul je een vertrek- en aankomstplaats in, dan sturen we die plaatsnamen naar Google om de fietsroute en reistijd te berekenen. De kaart met de route wordt rechtstreeks door Google geladen; daarbij ontvangt Google onder meer je IP-adres. Zie het <a href="https://policies.google.com/privacy?hl=nl" target="_blank" rel="noopener">privacybeleid van Google</a>. [Controleren: verwerkersafspraken en eventuele cookietoestemming voor de kaart.]</p>
 
   <h2>Hoe lang bewaren we ze</h2>
   <p>[Bewaartermijn invullen, bijvoorbeeld: tot [x] maanden na je laatste reservering, of zolang de wet dat vereist.]</p>

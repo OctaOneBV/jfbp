@@ -10,7 +10,7 @@ $vandaag = new DateTimeImmutable('today');
 $laatste = $vandaag->modify('+' . MAX_DAGEN_VOORUIT . ' days');
 
 $fouten = [];
-$invoer = ['fiets' => 0, 'startdatum' => $vandaag->modify('+1 day')->format('Y-m-d'), 'duur' => 1, 'locatie' => 0];
+$invoer = ['fiets' => 0, 'startdatum' => $vandaag->modify('+1 day')->format('Y-m-d'), 'duur' => 1, 'locatie' => 0, 'vertrek' => '', 'aankomst' => ''];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_controleren();
@@ -18,6 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $invoer['startdatum'] = (string) ($_POST['startdatum'] ?? '');
     $invoer['duur']       = (int) ($_POST['duur'] ?? 0);
     $invoer['locatie']    = (int) ($_POST['locatie'] ?? 0);
+    $invoer['vertrek']    = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['vertrek'] ?? '')));
+    $invoer['aankomst']   = trim(preg_replace('/\s+/u', ' ', (string) ($_POST['aankomst'] ?? '')));
 
     $fiets = null;
     foreach ($fietsen as $f) {
@@ -31,6 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!in_array($invoer['locatie'], array_map('intval', array_column($locaties, 'id')), true)) {
         $fouten['locatie'] = 'Kies een afhaallocatie.';
+    }
+    foreach (['vertrek', 'aankomst'] as $veld) {
+        if (mb_strlen($invoer[$veld]) > 150) {
+            $fouten[$veld] = 'Maximaal 150 tekens.';
+        }
+    }
+    if (($invoer['vertrek'] === '') !== ($invoer['aankomst'] === '')) {
+        $fouten['aankomst'] = 'Vul zowel een vertrek- als een aankomstplaats in, of laat beide leeg.';
     }
     $start = DateTimeImmutable::createFromFormat('!Y-m-d', $invoer['startdatum']);
     if (!$start || $start->format('Y-m-d') !== $invoer['startdatum']) {
@@ -52,11 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fouten['startdatum'] = 'De ' . $fiets['naam'] . ' is in (een deel van) deze periode al verhuurd. Kies een andere datum of fiets.';
                 $pdo->rollBack();
             } else {
-                $pdo->prepare('INSERT INTO reserveringen (gebruiker_id, fiets_id, locatie_id, startdatum, einddatum, aantal_dagen) VALUES (?, ?, ?, ?, ?, ?)')
-                    ->execute([$gebruiker['id'], $fiets['id'], $invoer['locatie'], $start->format('Y-m-d'), $eind->format('Y-m-d'), $invoer['duur']]);
+                $pdo->prepare('INSERT INTO reserveringen (gebruiker_id, fiets_id, locatie_id, startdatum, einddatum, aantal_dagen, vertrek, aankomst) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+                    ->execute([$gebruiker['id'], $fiets['id'], $invoer['locatie'], $start->format('Y-m-d'), $eind->format('Y-m-d'), $invoer['duur'],
+                               $invoer['vertrek'] ?: null, $invoer['aankomst'] ?: null]);
+                $id = (int) $pdo->lastInsertId();
                 $pdo->commit();
-                flash('Je reservering is geplaatst. Je vindt hem hieronder.');
-                redirect('/account.php');
+
+                // Fietsroute buiten de transactie berekenen: een trage of mislukte Google-aanroep mag de reservering niet blokkeren.
+                if ($invoer['vertrek'] !== '' && ($route = bereken_fietsroute($invoer['vertrek'], $invoer['aankomst']))) {
+                    $pdo->prepare('UPDATE reserveringen SET route_seconden = ?, route_meters = ? WHERE id = ?')
+                        ->execute([$route['seconden'], $route['meters'], $id]);
+                }
+                flash('Je reservering is geplaatst.');
+                redirect('/reservering.php?id=' . $id);
             }
         } catch (Throwable $ex) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
@@ -117,6 +135,21 @@ kop('Fiets reserveren');
       <?php endforeach; ?>
     </div>
     <?= fout($fouten, 'locatie') ?>
+  </fieldset>
+
+  <fieldset>
+    <legend>4. Je fietstocht <small>(optioneel)</small></legend>
+    <p class="lead">Vul in waar je vertrekt en waar je naartoe fietst. Na het reserveren tonen we de fietsroute op de kaart en hoe lang de tocht ongeveer duurt.</p>
+    <div class="rij">
+      <label>Vertrekplaats
+        <input name="vertrek" value="<?= e($invoer['vertrek']) ?>" maxlength="150" placeholder="bijv. Beesd" autocomplete="off">
+        <?= fout($fouten, 'vertrek') ?>
+      </label>
+      <label>Aankomstplaats
+        <input name="aankomst" value="<?= e($invoer['aankomst']) ?>" maxlength="150" placeholder="bijv. Culemborg" autocomplete="off">
+        <?= fout($fouten, 'aankomst') ?>
+      </label>
+    </div>
   </fieldset>
 
   <button class="knop" type="submit">Reservering plaatsen</button>

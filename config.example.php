@@ -5,4 +5,7 @@ return [
     'db_dsn'  => 'mysql:host=localhost;dbname=jfbp;charset=utf8mb4',
     'db_user' => 'jfbp',
     'db_pass' => 'VUL-HIER-HET-WACHTWOORD-IN',
+    // Google Maps (optioneel). Zie README voor het beperken van de sleutels.
+    'google_routes_key' => '',
+    'google_embed_key'  => '',
 ];

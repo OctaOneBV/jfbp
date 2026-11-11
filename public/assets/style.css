@@ -132,3 +132,16 @@ footer .onderbalk{border-top:1px solid rgba(255,255,255,.15);padding:16px 0;font
   .formulier{padding:24px 18px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- reservering & fietstocht ---------- */
+.samenvatting{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.samenvatting p{margin:0}
+.tocht{display:grid;grid-template-columns:minmax(260px,1fr) 2fr;gap:24px;align-items:start;margin-bottom:32px}
+.tocht-info{background:var(--licht);border-radius:6px;padding:24px}
+.van-naar{font-size:18px;color:var(--navy);margin:0 0 18px}
+.tocht-cijfers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.tocht-cijfers div{background:var(--wit);border:2px dashed var(--blauw);border-radius:6px;padding:14px;text-align:center}
+.tocht-cijfers .getal{display:block;font-size:22px;font-weight:700;color:var(--navy);line-height:1.2}
+.tocht-cijfers span:last-child{font-size:13px;text-transform:uppercase;color:var(--grijs);letter-spacing:.04em}
+.kaart-frame{width:100%;aspect-ratio:4/3;min-height:320px;border:0;border-radius:6px;box-shadow:0 4px 18px rgba(17,53,122,.1)}
+@media (max-width:760px){.tocht{grid-template-columns:1fr}}

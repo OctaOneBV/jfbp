@@ -33,6 +33,10 @@ CREATE TABLE reserveringen (
   startdatum    DATE         NOT NULL,
   einddatum     DATE         NOT NULL,  -- exclusief: dag waarop de fiets terug moet zijn
   aantal_dagen  SMALLINT UNSIGNED NOT NULL,
+  vertrek       VARCHAR(150) NULL,      -- fietstocht: vertrekplaats (optioneel)
+  aankomst      VARCHAR(150) NULL,      -- fietstocht: aankomstplaats (optioneel)
+  route_seconden INT UNSIGNED NULL,     -- fietsduur volgens Google Routes
+  route_meters  INT UNSIGNED NULL,      -- afstand volgens Google Routes
   aangemaakt_op DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_res_gebruiker FOREIGN KEY (gebruiker_id) REFERENCES gebruikers(id) ON DELETE CASCADE,
   CONSTRAINT fk_res_fiets     FOREIGN KEY (fiets_id)     REFERENCES fietsen(id),

@@ -10,7 +10,11 @@ $config += [
     'db_user' => getenv('JFBP_DB_USER') ?: 'jfbp',
     'db_pass' => getenv('JFBP_DB_PASS') ?: '',
     'sitenaam' => 'JFBP Fietsverhuur',
+    'google_routes_key' => getenv('JFBP_GOOGLE_ROUTES_KEY') ?: '',
+    'google_embed_key'  => getenv('JFBP_GOOGLE_EMBED_KEY') ?: '',
+    'google_routes_url' => 'https://routes.googleapis.com/directions/v2:computeRoutes',
 ];
+require __DIR__ . '/route.php';
 
 // Huurduur in dagen => label. Pas hier aan als de opties wijzigen.
 const HUURDUUR = [1 => '1 dag', 2 => '2 dagen', 3 => '3 dagen', 7 => '1 week', 14 => '2 weken'];
@@ -19,7 +23,7 @@ const MAX_DAGEN_VOORUIT = 90;
 date_default_timezone_set('Europe/Amsterdam');
 
 // ---------- beveiligingsheaders ----------
-header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+header("Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; form-action 'self'; frame-src https://www.google.com; frame-ancestors 'none'; base-uri 'none'");
 header('X-Frame-Options: DENY');
 
 // ---------- sessie ----------

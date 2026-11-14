@@ -29,6 +29,7 @@ $config += [
 require __DIR__ . '/route.php';
 require __DIR__ . '/fietsen.php';
 require __DIR__ . '/slot.php';
+require __DIR__ . '/beheer.php';
 
 const MAX_DAGEN_VOORUIT = 90;   // zo ver vooruit kan er gereserveerd worden
 const MAX_HUURDAGEN = 30;       // langste huurperiode
@@ -140,20 +141,61 @@ function login_vereist(): array
 
 function beheerder_vereist(): array
 {
-    $g = login_vereist();
+    $g = gebruiker();
+    if (!$g) {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $_SESSION['terug_naar'] = (string) ($_SERVER['REQUEST_URI'] ?? '/beheer/');
+        }
+        redirect('/beheer/inloggen.php');
+    }
     if ($g['rol'] !== 'beheerder') {
         http_response_code(403);
-        exit('Geen toegang.');
+        exit('Geen toegang: dit deel is alleen voor beheerders.');
     }
     return $g;
 }
 
 /** Interne pagina waar de gebruiker na het inloggen heen moet. */
-function na_inloggen(): string
+function na_inloggen(string $standaard = '/reserveren.php'): string
 {
     $pad = (string) ($_SESSION['terug_naar'] ?? '');
     unset($_SESSION['terug_naar']);
-    return preg_match('#^/(?![/\\\\])#', $pad) ? $pad : '/reserveren.php';
+    return preg_match('#^/(?![/\\\\])#', $pad) ? $pad : $standaard;
+}
+
+const MAX_POGINGEN = 10;     // mislukte inlogpogingen per IP-adres...
+const BLOKKEER_MINUTEN = 15; // ...binnen dit aantal minuten
+
+/**
+ * Controleert e-mail en wachtwoord met blokkade na te veel mislukte pogingen.
+ * @return array{0: ?array, 1: string} [gebruiker of null, foutmelding]
+ */
+function controleer_inlog(string $email, string $wachtwoord, ?string $vereisteRol = null): array
+{
+    $ip = client_ip();
+    $st = db()->prepare('SELECT COUNT(*) FROM inlogpogingen WHERE ip = ? AND tijd > NOW() - INTERVAL ? MINUTE');
+    $st->execute([$ip, BLOKKEER_MINUTEN]);
+    if ((int) $st->fetchColumn() >= MAX_POGINGEN) {
+        return [null, 'Te veel mislukte pogingen. Probeer het over ' . BLOKKEER_MINUTEN . ' minuten opnieuw.'];
+    }
+    $st = db()->prepare('SELECT id, wachtwoord, rol FROM gebruikers WHERE email = ?');
+    $st->execute([$email]);
+    $g = $st->fetch();
+    // Ook zonder gebruiker een hash controleren, zodat de reactietijd niets verraadt.
+    $hash = $g['wachtwoord'] ?? '$2y$12$Tn6Lo2.we.GVu9Sr1OgMI.ACbyGuBaKRU36JBl7JKZVWwprA5ZlXq';
+    if (password_verify($wachtwoord, $hash) && $g && ($vereisteRol === null || $g['rol'] === $vereisteRol)) {
+        if (password_needs_rehash($g['wachtwoord'], PASSWORD_DEFAULT)) {
+            db()->prepare('UPDATE gebruikers SET wachtwoord = ? WHERE id = ?')
+                ->execute([password_hash($wachtwoord, PASSWORD_DEFAULT), $g['id']]);
+        }
+        db()->prepare('DELETE FROM inlogpogingen WHERE ip = ?')->execute([$ip]);
+        session_regenerate_id(true);
+        $_SESSION['gebruiker_id'] = (int) $g['id'];
+        return [$g, ''];
+    }
+    db()->prepare('INSERT INTO inlogpogingen (ip) VALUES (?)')->execute([$ip]);
+    db()->exec('DELETE FROM inlogpogingen WHERE tijd < NOW() - INTERVAL 1 DAY');
+    return [null, $vereisteRol ? 'Onjuist e-mailadres of wachtwoord, of geen beheerdersaccount.' : 'Onjuist e-mailadres of wachtwoord.'];
 }
 
 function euro(float|string $bedrag): string
@@ -209,7 +251,7 @@ function kop(string $titel, string $extra = ''): void
         <a href="/reserveren.php">Reserveren</a>
         <a href="/account.php">Mijn reserveringen</a>
         <a href="/scan.php">Fiets openen</a>
-        <?php if ($g['rol'] === 'beheerder'): ?><a href="/beheer.php">Beheer</a><?php endif; ?>
+        <?php if ($g['rol'] === 'beheerder'): ?><a href="/beheer/">Beheer</a><?php endif; ?>
         <form method="post" action="/uitloggen.php" class="inline"><?= csrf_veld() ?><button class="link">Uitloggen</button></form>
       <?php else: ?>
         <a href="/inloggen.php">Inloggen</a>

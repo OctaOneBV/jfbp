@@ -19,6 +19,13 @@ CREATE TABLE maten (
   volgorde      TINYINT      NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE locaties (
+  id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  naam   VARCHAR(100) NOT NULL,
+  adres  VARCHAR(255) NOT NULL,
+  actief TINYINT(1)   NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Elke fiets heeft een uniek nummer (op het frame) en een unieke, niet te raden code in de barcode (QR).
 CREATE TABLE fietsen (
   id      INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -26,14 +33,9 @@ CREATE TABLE fietsen (
   maat    VARCHAR(3)   NOT NULL,
   code    CHAR(12)     NOT NULL UNIQUE,     -- inhoud van de barcode
   actief  TINYINT(1)   NOT NULL DEFAULT 1,  -- 0 = in onderhoud, niet verhuurbaar
-  CONSTRAINT fk_fiets_maat FOREIGN KEY (maat) REFERENCES maten(maat)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE locaties (
-  id     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  naam   VARCHAR(100) NOT NULL,
-  adres  VARCHAR(255) NOT NULL,
-  actief TINYINT(1)   NOT NULL DEFAULT 1
+  thuis_locatie_id INT UNSIGNED NOT NULL,  -- startlocatie; daarna bepalen verhuur en verplaatsingen waar de fiets staat
+  CONSTRAINT fk_fiets_maat FOREIGN KEY (maat) REFERENCES maten(maat),
+  CONSTRAINT fk_fiets_thuis FOREIGN KEY (thuis_locatie_id) REFERENCES locaties(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE reserveringen (
@@ -59,6 +61,21 @@ CREATE TABLE reserveringen (
   CONSTRAINT fk_res_terugbreng FOREIGN KEY (terugbreng_locatie_id) REFERENCES locaties(id),
   CONSTRAINT chk_res_periode   CHECK (terugbreng_datum >= afhaal_datum),
   INDEX idx_fiets_periode (fiets_id, afhaal_datum, terugbreng_datum)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Verplaatsing van een fiets door de beheerder (bijv. herverdelen tussen locaties).
+-- Vanaf 'datum' staat de fiets op 'naar_locatie_id'.
+CREATE TABLE verplaatsingen (
+  id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  fiets_id        INT UNSIGNED NOT NULL,
+  datum           DATE         NOT NULL,
+  naar_locatie_id INT UNSIGNED NOT NULL,
+  door_gebruiker_id INT UNSIGNED NULL,
+  aangemaakt_op   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_verpl_fiets   FOREIGN KEY (fiets_id)        REFERENCES fietsen(id),
+  CONSTRAINT fk_verpl_locatie FOREIGN KEY (naar_locatie_id) REFERENCES locaties(id),
+  CONSTRAINT fk_verpl_door    FOREIGN KEY (door_gebruiker_id) REFERENCES gebruikers(id) ON DELETE SET NULL,
+  INDEX idx_verpl_fiets (fiets_id, datum)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Elke scan van een barcode wordt vastgelegd, ook als het slot niet opengaat.
@@ -99,17 +116,20 @@ INSERT INTO maten (maat, omschrijving, prijs_per_dag, volgorde) VALUES
   ('L',  'Large frame. Indicatie: lichaamslengte ca. 1,75 – 1,85 m.',  15.00, 2),
   ('XL', 'Extra large frame. Indicatie: vanaf ca. 1,85 m.',            15.00, 3);
 
--- 30 fietsen: 10 x M, 10 x L, 10 x XL. De code is willekeurig per installatie,
--- zodat niemand de barcode van een andere fiets kan raden.
-INSERT INTO fietsen (nummer, maat, code)
-WITH RECURSIVE n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 10)
-SELECT CONCAT(m.maat, '-', LPAD(n.i, 2, '0')), m.maat, UPPER(LEFT(SHA2(CONCAT(UUID(), RAND(), m.maat, n.i), 256), 12))
-  FROM maten m CROSS JOIN n
- ORDER BY m.volgorde, n.i;
-
 -- Afhaal- en terugbrenglocaties. Adressen nog invullen.
 INSERT INTO locaties (naam, adres) VALUES
   ('Amsterdam',  '[Adres volgt], Amsterdam'),
   ('Utrecht',    '[Adres volgt], Utrecht'),
   ('Groningen',  '[Adres volgt], Groningen'),
   ('Maastricht', '[Adres volgt], Maastricht');
+
+-- 30 fietsen: 10 x M, 10 x L, 10 x XL. De code is willekeurig per installatie,
+-- zodat niemand de barcode van een andere fiets kan raden.
+-- Startverdeling: per maat om en om over de locaties (3/3/2/2). Pas aan naar de werkelijke verdeling.
+INSERT INTO fietsen (nummer, maat, code, thuis_locatie_id)
+WITH RECURSIVE n AS (SELECT 1 AS i UNION ALL SELECT i + 1 FROM n WHERE i < 10),
+     l AS (SELECT id, ROW_NUMBER() OVER (ORDER BY id) - 1 AS nr, COUNT(*) OVER () AS aantal FROM locaties)
+SELECT CONCAT(m.maat, '-', LPAD(n.i, 2, '0')), m.maat, UPPER(LEFT(SHA2(CONCAT(UUID(), RAND(), m.maat, n.i), 256), 12)), l.id
+  FROM maten m CROSS JOIN n JOIN l ON l.nr = (n.i - 1) MOD l.aantal
+ ORDER BY m.volgorde, n.i;
+

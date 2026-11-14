@@ -171,3 +171,6 @@ table.beschikbaarheid{min-width:0}
   .labels{grid-template-columns:repeat(3,1fr);gap:4mm}
   .label{border-color:#999}
 }
+.filter{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.filter a{padding:4px 14px;border-radius:50px;border:2px dashed var(--blauw);font-size:13px;font-weight:700;text-decoration:none}
+.filter a.actief{background:var(--blauw);border-style:solid}

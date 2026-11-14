@@ -2,8 +2,10 @@
 require __DIR__ . '/../src/bootstrap.php';
 
 $maten = maten();
-$vandaag = date('Y-m-d');
-$vrij = vrij_per_maat($vandaag, $vandaag);
+$vrij = [];
+foreach (vrij_per_locatie(date('Y-m-d')) as $perMaat) {
+    foreach ($perMaat as $maat => $n) { $vrij[$maat] = ($vrij[$maat] ?? 0) + $n; }
+}
 $locaties = db()->query('SELECT naam FROM locaties WHERE actief = 1 ORDER BY naam')->fetchAll(PDO::FETCH_COLUMN);
 
 kop('Fiets huren');

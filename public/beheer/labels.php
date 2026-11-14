@@ -1,17 +1,17 @@
 <?php
-require __DIR__ . '/../src/bootstrap.php';
+require __DIR__ . '/../../src/bootstrap.php';
 
 beheerder_vereist();
 
 $fietsen = db()->query('SELECT f.nummer, f.maat, f.code FROM fietsen f JOIN maten m ON m.maat = f.maat ORDER BY m.volgorde, f.nummer')->fetchAll();
 
-kop('Barcodelabels', 'labels');
+beheer_kop('Barcodelabels', 'fietsen', 'labels');
 ?>
 <div class="niet-printen">
   <h1>Barcodelabels</h1>
   <p class="lead">Eén label per fiets. De QR-code bevat het adres <code><?= e(scan_url('…')) ?></code>; scannen met een telefooncamera opent direct de juiste pagina.
     Print op stickervellen of plastificeer de labels en bevestig ze goed zichtbaar op het frame.</p>
-  <p><button class="knop" type="button" id="printen">Printen</button> <a class="knop secundair" href="/beheer.php">Terug naar beheer</a></p>
+  <p><button class="knop" type="button" id="printen">Printen</button> <a class="knop secundair" href="/beheer/fietsen.php">Terug naar fietsen</a></p>
 </div>
 
 <div class="labels">
@@ -27,4 +27,4 @@ kop('Barcodelabels', 'labels');
     </div>
   <?php endforeach; ?>
 </div>
-<?php voet();
+<?php beheer_voet();

@@ -19,9 +19,10 @@ telefoon de barcode (QR) op de fiets te scannen, maar alleen als die fiets op da
 | `public/account.php` | Overzicht van eigen reserveringen |
 | `public/reservering.php` | Details van één reservering: toegewezen fietsnummer, route op de kaart en fietstijd |
 | `public/scan.php` | Pagina achter de barcode: controleert de reservering en opent het slot |
-| `public/beheer.php` | Beheerders: status van alle 30 fietsen, onderhoud aan/uit, laatste 50 scans |
-| `public/labels.php` | Beheerders: printbare QR-labels voor alle fietsen |
-| `src/fietsen.php` | Beschikbaarheid, toewijzen van een vrije fiets, scanlog |
+| `public/beheer/` | Beheerportaal met eigen inlog (zie *Beheerportaal*) |
+| `bin/beheerder.php` | Commandoregel: account beheerder maken |
+| `src/fietsen.php` | Locatie per fiets, beschikbaarheid, toewijzen van een vrije fiets, scanlog |
+| `src/beheer.php` | Opmaak en menu van het beheerportaal |
 | `src/slot.php` | Koppeling met het fietsslot (nu: simulatie of algemene webhook) |
 | `src/route.php` | Nominatim (plaatsnamen) en BRouter (fietsroute); fietstijd bij 15 km/u |
 | `src/bootstrap.php` | Config, database, sessie, CSRF, rollen, opmaak. Constanten `MAX_HUURDAGEN`, `GEMIDDELDE_SNELHEID_KMH` |
@@ -35,8 +36,11 @@ telefoon de barcode (QR) op de fiets te scannen, maar alleen als die fiets op da
   (bij voorkeur een fiets die het laatst op de afhaalplaats is teruggebracht).
 - Een reservering bezet de fiets van de afhaaldatum **t/m** de terugbrengdatum. Overlappende
   reserveringen voor dezelfde fiets zijn niet mogelijk (vergrendeld in een transactie).
-- Let op: de site houdt niet bij **waar** een fiets fysiek staat. Een fiets die in Amsterdam is
-  teruggebracht kan aan iemand in Maastricht worden toegewezen; het herverdelen van fietsen is werk voor de beheerder.
+- **Locatie per fiets.** Elke fiets begint op zijn thuislocatie (`fietsen.thuis_locatie_id`, startverdeling 3/3/2/2
+  per maat; pas aan naar de werkelijkheid). Na een verhuur staat hij vanaf de dag ná de terugbrengdatum op de
+  terugbrenglocatie. Beheerders kunnen fietsen verplaatsen (tabel `verplaatsingen`).
+- Een fiets wordt alleen toegewezen als hij op de afhaaldag op de afhaallocatie staat, en als een latere reservering
+  van die fiets daarna nog aansluit. Een verplaatsing die een latere reservering zou breken, wordt geweigerd.
 
 ### Barcode en slot
 
@@ -47,9 +51,23 @@ telefoon de barcode (QR) op de fiets te scannen, maar alleen als die fiets op da
 - **Het fysieke slot is nog niet gekoppeld.** `src/slot.php` staat standaard op `simulatie`.
   Zodra bekend is welk (smart)slot er op de fietsen komt, wordt de functie `slot_openen()`
   aangepast op de API van die leverancier. De meegeleverde `webhook`-stand is een algemeen voorbeeld.
-- Labels printen: log in als beheerder → Beheer → Barcodelabels printen. Zet eerst `basis_url` goed.
-- Beheerder maken (eenmalig, in de database):
-  `UPDATE gebruikers SET rol = 'beheerder' WHERE email = '…';`
+- Labels printen: beheerportaal → Fietsen → Barcodelabels printen. Zet eerst `basis_url` goed.
+
+### Beheerportaal
+
+Inloggen op `/beheer/` (alleen accounts met de rol *beheerder*; klanten krijgen geen toegang).
+
+| Pagina | Wat je ziet |
+|---|---|
+| **Tijdbalk** | Week (ma–zo) met per fiets de verhuurblokken, filter op maat; daaronder vrije fietsen per locatie per dag |
+| **Beschikbaarheid** | Elke willekeurige dag: vrije fietsen per locatie en maat, ophalen/terugbrengen, welke fietsnummers er staan |
+| **Huurders** | Zoeken op periode, naam/e-mail/fiets, locatie en maat; details per reservering met scans; export naar CSV (Excel) |
+| **Statistiek** | Bezetting per week of maand (gerealiseerd en gepland), per weekdag, per locatie en maat, drukste dagen |
+| **Fietsen** | Status vandaag, onderhoud aan/uit, fietsen verplaatsen, laatste verplaatsingen en scans, QR-labels |
+
+Een account beheerder maken (eerst gewoon registreren op de website):
+
+    php bin/beheerder.php naam@voorbeeld.nl
 
 ## Installatie (server)
 

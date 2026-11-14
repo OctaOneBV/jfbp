@@ -131,7 +131,7 @@ kop('Fiets openen');
       <p>Code <?= e($fiets['code']) ?><?= $fiets['actief'] ? '' : ' · <strong>in onderhoud</strong>' ?></p>
       <p><?= $huidig ? 'Eerstvolgende/huidige verhuur: ' . e($huidig['huurder_naam']) . ', ' . datum($huidig['afhaal_datum']) . ' t/m ' . datum($huidig['terugbreng_datum'])
                      : 'Geen lopende of komende verhuur.' ?></p>
-      <p><a href="/beheer.php">Naar het fietsoverzicht</a></p>
+      <p><a href="/beheer/fietsen.php">Naar het fietsoverzicht</a></p>
     </div>
   <?php endif; ?>
 <?php endif; ?>

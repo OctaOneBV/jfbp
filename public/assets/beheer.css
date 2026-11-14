@@ -98,3 +98,70 @@ tr.gepland-rij td{color:var(--grijs)}
 .b0{width:0}.b1{width:10%}.b2{width:20%}.b3{width:30%}.b4{width:40%}.b5{width:50%}.b6{width:60%}.b7{width:70%}.b8{width:80%}.b9{width:90%}.b10{width:100%}
 
 @media print{.beheer-kop,.filterbalk,.weeknav{display:none!important}}
+
+/* ---------- compacte weergave: meer informatie per scherm ---------- */
+body.beheer{font-size:14px;line-height:1.45}
+.beheer .beheer-kop .wrap{min-height:50px}
+.beheer .beheer-kop .logo{font-size:18px}
+.beheer .beheer-kop .logo span{font-size:13px}
+.beheer .beheer-kop nav a,.beheer .beheer-kop button.link{font-size:12.5px}
+.beheer .beheer-kop nav a{padding:3px 0}
+.beheer .inhoud{padding-top:14px;padding-bottom:28px}
+.beheer h1{font-size:21px;margin:0 0 8px}
+.beheer h2{font-size:15px;margin:20px 0 8px;padding-bottom:6px}
+.beheer h2::after{width:32px;height:2px}
+.beheer h3{font-size:13px;margin:0 0 4px}
+.beheer .lead{font-size:13.5px;margin:0 0 10px}
+.beheer .klein,.beheer small{font-size:12px}
+.beheer .melding{padding:7px 12px;margin:0 0 10px;font-size:13px}
+.beheer p{margin:0 0 8px}
+
+.beheer .knop.klein{padding:4px 14px;font-size:11.5px}
+.beheer .balk-kop{margin-bottom:8px;gap:8px}
+.beheer .weeknav{gap:6px}
+.beheer .filterbalk{padding:7px 10px;gap:6px 12px;margin-bottom:12px}
+.beheer .filterbalk label{font-size:12.5px}
+.beheer .filterbalk input,.beheer .filterbalk select{margin-top:2px;padding:4px 7px;min-width:120px;font-size:13px}
+.beheer .filterbalk .vinkje{padding-bottom:5px}
+
+.beheer .tabel{margin-bottom:12px}
+.beheer table{min-width:0}
+.beheer th,.beheer td{padding:4px 8px;font-size:13px;line-height:1.35}
+.beheer th{font-size:11px;letter-spacing:.03em}
+.beheer td small{font-size:11.5px}
+.beheer .tabel.hoog{max-height:340px}
+.beheer .twee-kolommen{gap:0 20px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+
+.beheer .grid{gap:10px}
+.beheer .kaart{padding:10px 12px;border-top-width:3px;box-shadow:none}
+.beheer .kaart p{margin:0 0 4px}
+.beheer .prijs{font-size:15px}
+.beheer .samenvatting{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+
+/* tijdbalk */
+.beheer .tb-rij{grid-template-columns:96px 1fr;min-height:30px}
+.beheer .tb-kop{grid-template-columns:96px repeat(7,1fr)}
+.beheer .tb-kop>div{padding:4px 8px;font-size:11.5px}
+.beheer .tb-kop .tb-dag strong{font-size:13px}
+.beheer .tb-fiets{padding:2px 8px;flex-direction:row;align-items:center;justify-content:space-between;gap:4px}
+.beheer .tb-fiets strong{font-size:13px}
+.beheer .tb-fiets small{font-size:10.5px}
+.beheer .tb-blok{margin:3px 2px;padding:0 6px;font-size:11px;line-height:1.2;flex-direction:row;align-items:center;gap:6px;border-width:1.5px}
+.beheer .tb-blok .naam{flex:0 1 auto;min-width:0}
+.beheer .tb-blok .route{flex:0 1 auto;min-width:0;font-size:10.5px}
+.beheer .legenda{margin-top:6px}
+.beheer .tb-voorbeeld{width:20px;height:11px}
+
+/* statistiek */
+.beheer .tegels{gap:10px;margin-bottom:4px}
+.beheer .tegel{padding:8px 12px;border-left-width:3px}
+.beheer .tegel .getal{font-size:20px}
+.beheer .tegel span:last-child{font-size:11px}
+.beheer .grafiek{margin:0 0 4px}
+
+/* fietsen */
+.beheer .verplaats{gap:4px;flex-wrap:nowrap}
+.beheer .verplaats input,.beheer .verplaats select{padding:2px 5px;font-size:12px;border-bottom-width:1px}
+.beheer .chip{padding:0 8px;font-size:12px;border-width:1.5px}
+.beheer .chips{gap:4px}
+.beheer .balkje{width:90px;height:8px}

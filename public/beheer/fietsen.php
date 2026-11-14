@@ -94,7 +94,7 @@ beheer_kop('Fietsen', 'fietsen');
         </td>
         <td>
           <form method="post" class="inline"><?= csrf_veld() ?><input type="hidden" name="fiets" value="<?= (int) $f['id'] ?>"><input type="hidden" name="actie" value="onderhoud">
-            <button class="link"><?= $f['actief'] ? 'Actief · in onderhoud zetten' : 'In onderhoud · activeren' ?></button>
+            <button class="link"><?= $f['actief'] ? 'Actief · naar onderhoud' : 'Onderhoud · activeren' ?></button>
           </form>
         </td>
       </tr>

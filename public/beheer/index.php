@@ -96,7 +96,7 @@ beheer_kop('Tijdbalk', 'tijdbalk');
       <div class="tb-rij <?= $f['actief'] ? '' : 'onderhoud' ?>" role="row">
         <div class="tb-fiets" role="rowheader">
           <strong><?= e($f['nummer']) ?></strong>
-          <small><?= e($locNaam[$f['locatie_id']] ?? '?') ?><?= $f['actief'] ? '' : ' · onderhoud' ?></small>
+          <small title="<?= e($locNaam[$f['locatie_id']] ?? '?') ?>"><?= e(kort($locNaam[$f['locatie_id']] ?? '?')) ?><?= $f['actief'] ? '' : ' · ond.' ?></small>
         </div>
         <div class="tb-dagen" role="cell">
           <?php foreach ($dagen as $d): ?><span class="tb-vak <?= $d == $vandaag ? 'vandaag' : '' ?> <?= (int) $d->format('N') >= 6 ? 'weekend' : '' ?>"></span><?php endforeach; ?>

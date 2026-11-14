@@ -90,7 +90,7 @@ $drukste = array_slice(array_filter($drukste), 0, 10, true);
  */
 function kolommen(array $items, float $max, string $eenheid, string $titel, int $labelElke = 1): string
 {
-    $b = 760; $h = 240; $links = 44; $onder = 26; $boven = 12;
+    $b = 760; $h = 170; $links = 40; $onder = 22; $boven = 12;
     $plotB = $b - $links - 8; $plotH = $h - $onder - $boven;
     $n = max(1, count($items));
     $slot = $plotB / $n;

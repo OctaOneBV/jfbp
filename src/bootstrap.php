@@ -2,9 +2,13 @@
 declare(strict_types=1);
 
 // ---------- configuratie ----------
-// Volgorde: omgevingsvariabelen, daarna een configbestand buiten de webroot.
-$configFile = getenv('JFBP_CONFIG') ?: dirname(__DIR__) . '/config.local.php';
-$config = is_file($configFile) ? require $configFile : [];
+// Configbestand buiten de webroot. Eerste die bestaat wint: $JFBP_CONFIG, naast de code,
+// of in de klantmap op de server (buiten de uitrolmap, dus niet overschreven bij een nieuwe versie).
+$configFile = null;
+foreach ([getenv('JFBP_CONFIG') ?: null, dirname(__DIR__) . '/config.local.php', '/srv/klanten/jfbp/config.local.php'] as $pad) {
+    if ($pad && @is_file($pad)) { $configFile = $pad; break; }
+}
+$config = $configFile ? require $configFile : [];
 $config += [
     'db_dsn'  => getenv('JFBP_DB_DSN') ?: 'mysql:host=localhost;dbname=jfbp;charset=utf8mb4',
     'db_user' => getenv('JFBP_DB_USER') ?: 'jfbp',

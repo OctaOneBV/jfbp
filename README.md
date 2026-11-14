@@ -54,9 +54,9 @@ telefoon de barcode (QR) op de fiets te scannen, maar alleen als die fiets op da
 ## Installatie (server)
 
 1. Maak een lege MariaDB-database en -gebruiker aan, en voer `database/schema.sql` uit.
-2. Zet de databasegegevens in `config.local.php` (zie `config.example.php`) buiten de uitrolmap,
-   en verwijs ernaar met de omgevingsvariabele `JFBP_CONFIG`; of gebruik `JFBP_DB_DSN`,
-   `JFBP_DB_USER` en `JFBP_DB_PASS`.
+2. Zet de databasegegevens in `/srv/klanten/jfbp/config.local.php` (zie `config.example.php`):
+   buiten de uitrolmap en binnen de open_basedir van de PHP-pool. Rechten: `root:k-jfbp`, `640`.
+   Andere plek? Verwijs ernaar met de omgevingsvariabele `JFBP_CONFIG`.
 3. Webroot naar `public/` (Raziel-type *php*).
 4. Route en kaart gebruiken standaard de openbare servers van OpenStreetMap (Nominatim, kaarttegels)
    en brouter.de. Die zijn bedoeld voor licht gebruik; lees de gebruiksvoorwaarden en zet bij meer

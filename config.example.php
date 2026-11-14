@@ -10,4 +10,10 @@ return [
     // 'routing_url'      => 'https://brouter.de/brouter',
     // 'route_user_agent' => 'fietsverhuur-website/1.0 (contact: [e-mailadres])',
     // 'tegel_url'        => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    // Adres dat in de barcodes op de fietsen komt (pas aan vóór het printen van de labels):
+    // 'basis_url'        => 'https://jfbp.nl',
+    // Fietsslot, zie src/slot.php. 'simulatie' opent niets echt; 'webhook' roept de slotdienst aan:
+    // 'slot_modus'         => 'simulatie',
+    // 'slot_webhook_url'   => 'https://…',
+    // 'slot_webhook_token' => 'ZET-HIER-DE-SLEUTEL-VAN-DE-SLOTLEVERANCIER',
 ];

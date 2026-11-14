@@ -15,12 +15,20 @@ $config += [
     'routing_url'      => getenv('JFBP_ROUTING_URL') ?: 'https://brouter.de/brouter',
     'route_user_agent' => getenv('JFBP_ROUTE_USER_AGENT') ?: 'fietsverhuur-website/1.0',
     'tegel_url'        => 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    // Adres van de site zoals het in de barcodes op de fietsen komt te staan.
+    'basis_url'        => getenv('JFBP_BASIS_URL') ?: 'https://jfbp.nl',
+    // Fietsslot (zie src/slot.php): 'simulatie' (alleen loggen) of 'webhook'.
+    'slot_modus'         => getenv('JFBP_SLOT_MODUS') ?: 'simulatie',
+    'slot_webhook_url'   => getenv('JFBP_SLOT_WEBHOOK_URL') ?: '',
+    'slot_webhook_token' => getenv('JFBP_SLOT_WEBHOOK_TOKEN') ?: '',
 ];
 require __DIR__ . '/route.php';
+require __DIR__ . '/fietsen.php';
+require __DIR__ . '/slot.php';
 
-// Huurduur in dagen => label. Pas hier aan als de opties wijzigen.
-const HUURDUUR = [1 => '1 dag', 2 => '2 dagen', 3 => '3 dagen', 7 => '1 week', 14 => '2 weken'];
-const MAX_DAGEN_VOORUIT = 90;
+const MAX_DAGEN_VOORUIT = 90;   // zo ver vooruit kan er gereserveerd worden
+const MAX_HUURDAGEN = 30;       // langste huurperiode
+const GEMIDDELDE_SNELHEID_KMH = 15; // voor de geschatte fietstijd van de route
 
 date_default_timezone_set('Europe/Amsterdam');
 
@@ -104,7 +112,7 @@ function gebruiker(): ?array
     if ($g === false) {
         $g = null;
         if (!empty($_SESSION['gebruiker_id'])) {
-            $st = db()->prepare('SELECT id, naam, email FROM gebruikers WHERE id = ?');
+            $st = db()->prepare('SELECT id, naam, email, rol FROM gebruikers WHERE id = ?');
             $st->execute([$_SESSION['gebruiker_id']]);
             $g = $st->fetch() ?: null;
         }
@@ -116,10 +124,32 @@ function login_vereist(): array
 {
     $g = gebruiker();
     if (!$g) {
-        flash('Log in om een fiets te reserveren.', 'info');
+        // Na het inloggen terug naar deze pagina (bijv. na het scannen van een fiets).
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $_SESSION['terug_naar'] = (string) ($_SERVER['REQUEST_URI'] ?? '/');
+        }
+        flash('Log in om verder te gaan.', 'info');
         redirect('/inloggen.php');
     }
     return $g;
+}
+
+function beheerder_vereist(): array
+{
+    $g = login_vereist();
+    if ($g['rol'] !== 'beheerder') {
+        http_response_code(403);
+        exit('Geen toegang.');
+    }
+    return $g;
+}
+
+/** Interne pagina waar de gebruiker na het inloggen heen moet. */
+function na_inloggen(): string
+{
+    $pad = (string) ($_SESSION['terug_naar'] ?? '');
+    unset($_SESSION['terug_naar']);
+    return preg_match('#^/(?![/\\\\])#', $pad) ? $pad : '/reserveren.php';
 }
 
 function euro(float|string $bedrag): string
@@ -144,7 +174,7 @@ function client_ip(): string
 }
 
 // ---------- opmaak ----------
-function kop(string $titel, bool $kaart = false): void
+function kop(string $titel, string $extra = ''): void
 {
     global $config;
     $g = gebruiker();
@@ -157,10 +187,13 @@ function kop(string $titel, bool $kaart = false): void
 <title><?= e($titel) ?> · <?= e($config['sitenaam']) ?></title>
 <link rel="stylesheet" href="/assets/style.css">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<?php if ($kaart): ?>
+<?php if ($extra === 'kaart'): ?>
 <link rel="stylesheet" href="/assets/leaflet/leaflet.css">
 <script src="/assets/leaflet/leaflet.js" defer></script>
 <script src="/assets/kaart.js" defer></script>
+<?php elseif ($extra === 'labels'): ?>
+<script src="/assets/qrcode/qrcode.min.js" defer></script>
+<script src="/assets/labels.js" defer></script>
 <?php endif; ?>
 </head>
 <body>
@@ -171,6 +204,8 @@ function kop(string $titel, bool $kaart = false): void
       <?php if ($g): ?>
         <a href="/reserveren.php">Reserveren</a>
         <a href="/account.php">Mijn reserveringen</a>
+        <a href="/scan.php">Fiets openen</a>
+        <?php if ($g['rol'] === 'beheerder'): ?><a href="/beheer.php">Beheer</a><?php endif; ?>
         <form method="post" action="/uitloggen.php" class="inline"><?= csrf_veld() ?><button class="link">Uitloggen</button></form>
       <?php else: ?>
         <a href="/inloggen.php">Inloggen</a>

@@ -4,7 +4,8 @@ declare(strict_types=1);
 // Fietsroute met open-source diensten (geen Google):
 //  - Plaatsnaam -> coördinaten: Nominatim (OpenStreetMap). Resultaten worden in de tabel geocache bewaard.
 //    Gebruiksvoorwaarden: https://operations.osmfoundation.org/policies/nominatim/ (o.a. max. 1 verzoek/s).
-//  - Route, afstand en reistijd: BRouter (fietsrouteplanner op OpenStreetMap-data), profiel 'trekking'.
+//  - Route en afstand: BRouter (fietsrouteplanner op OpenStreetMap-data), profiel 'trekking'.
+//    De fietstijd rekenen we zelf uit met een gemiddelde snelheid (GEMIDDELDE_SNELHEID_KMH, 15 km/u).
 //    https://brouter.de  — voor productie bij voorkeur een eigen BRouter-server (zie README).
 //  - Kaart: Leaflet met OpenStreetMap-tegels (in de browser, zie public/assets/kaart.js).
 // Alle adressen staan in de config en zijn dus naar eigen servers om te zetten.
@@ -69,7 +70,7 @@ function zoek_plaats(string $plaats): ?array
 }
 
 /**
- * @return array{seconden:int, meters:int, lijn:array<int, array{0:float,1:float}>}|null
+ * @return array{meters:int, lijn:array<int, array{0:float,1:float}>}|null
  */
 function bereken_fietsroute(string $van, string $naar): ?array
 {
@@ -86,7 +87,7 @@ function bereken_fietsroute(string $van, string $naar): ?array
         'format'         => 'geojson',
     ]));
     $f = $data['features'][0] ?? null;
-    if (!$f || !isset($f['properties']['track-length'], $f['properties']['total-time'], $f['geometry']['coordinates'])) {
+    if (!$f || !isset($f['properties']['track-length'], $f['geometry']['coordinates'])) {
         return null;
     }
     // GeoJSON is [lon, lat, hoogte]; voor Leaflet [lat, lon]. Maximaal ~1500 punten om de pagina licht te houden.
@@ -99,7 +100,6 @@ function bereken_fietsroute(string $van, string $naar): ?array
         }
     }
     return [
-        'seconden' => (int) $f['properties']['total-time'],
         'meters'   => (int) $f['properties']['track-length'],
         'lijn'     => $lijn,
     ];
@@ -107,8 +107,14 @@ function bereken_fietsroute(string $van, string $naar): ?array
 
 function route_opslaan(int $reserveringId, array $route): void
 {
-    db()->prepare('UPDATE reserveringen SET route_seconden = ?, route_meters = ?, route_lijn = ? WHERE id = ?')
-        ->execute([$route['seconden'], $route['meters'], json_encode($route['lijn']), $reserveringId]);
+    db()->prepare('UPDATE reserveringen SET route_meters = ?, route_lijn = ? WHERE id = ?')
+        ->execute([$route['meters'], json_encode($route['lijn']), $reserveringId]);
+}
+
+/** Fietstijd in seconden bij de gemiddelde snelheid uit de instellingen (15 km/u). */
+function fietstijd_seconden(int $meters): int
+{
+    return (int) round($meters / (GEMIDDELDE_SNELHEID_KMH * 1000 / 3600));
 }
 
 function osm_route_link(string $van, string $naar): string

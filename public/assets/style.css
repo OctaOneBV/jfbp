@@ -145,3 +145,29 @@ footer .onderbalk{border-top:1px solid rgba(255,255,255,.15);padding:16px 0;font
 .tocht-cijfers span:last-child{font-size:13px;text-transform:uppercase;color:var(--grijs);letter-spacing:.04em}
 .kaart-frame{width:100%;aspect-ratio:4/3;min-height:320px;border:0;border-radius:6px;box-shadow:0 4px 18px rgba(17,53,122,.1)}
 @media (max-width:760px){.tocht{grid-template-columns:1fr}}
+
+/* ---------- beschikbaarheid, scannen, beheer ---------- */
+.beschikbaar{font-size:14px;font-weight:600;color:var(--ok)!important}
+.beschikbaar.nul,td.nul{color:var(--fout)!important;font-weight:700}
+table.beschikbaarheid{min-width:0}
+.fietsnummer{font-weight:700;color:var(--navy);letter-spacing:.04em}
+.fietsnummer.groot{font-size:clamp(40px,12vw,64px);line-height:1;margin:0 0 6px}
+.scan-fiets{max-width:520px;text-align:center;margin:0 auto 32px;background:var(--licht);border-radius:6px;padding:32px 20px}
+.scan-fiets .melding{text-align:left}
+.knop.groot{font-size:18px;padding:16px 44px;margin-top:8px}
+.beheer-info{max-width:520px;margin:0 auto}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.06em}
+.slot-uitleg{margin-top:24px}
+.labels{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.label{display:flex;gap:10px;align-items:center;border:1px dashed var(--grijs);border-radius:6px;padding:10px;break-inside:avoid;page-break-inside:avoid;background:var(--wit)}
+.label .qr{width:110px;flex:0 0 110px}
+.label .qr svg{display:block;width:100%;height:auto}
+.label-tekst{display:flex;flex-direction:column;line-height:1.3}
+.label-tekst strong{font-size:24px;color:var(--navy)}
+.label-tekst .code{font-size:13px}
+@media print{
+  header,footer,.niet-printen,.melding{display:none!important}
+  .inhoud{padding:0}
+  .labels{grid-template-columns:repeat(3,1fr);gap:4mm}
+  .label{border-color:#999}
+}

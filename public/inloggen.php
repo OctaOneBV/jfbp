@@ -2,7 +2,7 @@
 require __DIR__ . '/../src/bootstrap.php';
 
 if (gebruiker()) {
-    redirect('/reserveren.php');
+    redirect(na_inloggen());
 }
 
 const MAX_POGINGEN = 10;   // mislukte pogingen per IP-adres...
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             db()->prepare('DELETE FROM inlogpogingen WHERE ip = ?')->execute([$ip]);
             session_regenerate_id(true);
             $_SESSION['gebruiker_id'] = (int) $g['id'];
-            redirect('/reserveren.php');
+            redirect(na_inloggen());
         }
         db()->prepare('INSERT INTO inlogpogingen (ip) VALUES (?)')->execute([$ip]);
         db()->exec('DELETE FROM inlogpogingen WHERE tijd < NOW() - INTERVAL 1 DAY');

@@ -14,7 +14,8 @@ kop('Privacyverklaring');
   <ul>
     <li>Naam, e-mailadres en (optioneel) telefoonnummer, om je account en reserveringen te beheren.</li>
     <li>Je wachtwoord, uitsluitend versleuteld (gehasht) opgeslagen.</li>
-    <li>Je reserveringen: fiets, periode, afhaal- en terugbrenglocatie.</li>
+    <li>Je reserveringen: naam van de huurder, fiets, afhaal- en terugbrengplaats en -datum.</li>
+    <li>Scans van de barcode op een fiets: welke fiets, wanneer, door welk account, het resultaat (slot geopend of niet) en het IP-adres. Dit gebruiken we om het slot alleen voor de juiste huurder te openen en om misbruik te kunnen onderzoeken. [Bewaartermijn scans invullen.]</li>
     <li>Optioneel: de vertrek- en aankomstplaats van je fietstocht.</li>
     <li>Het IP-adres bij mislukte inlogpogingen, maximaal 24 uur, om misbruik te voorkomen.</li>
   </ul>

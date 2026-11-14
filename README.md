@@ -63,6 +63,7 @@ Inloggen op `/beheer/` (alleen accounts met de rol *beheerder*; klanten krijgen 
 | **Beschikbaarheid** | Elke willekeurige dag: vrije fietsen per locatie en maat, ophalen/terugbrengen, welke fietsnummers er staan |
 | **Huurders** | Zoeken op periode, naam/e-mail/fiets, locatie en maat; details per reservering met scans; export naar CSV (Excel) |
 | **Statistiek** | Bezetting per week of maand (gerealiseerd en gepland), per weekdag, per locatie en maat, drukste dagen |
+| **Sloten** | Alle fietsen (horizontaal) × vestigingen (verticaal). Rood = dicht; klik = vrijgeven (groen) met een eenmalige openingscode (24 uur geldig), die je daarna per fiets of allemaal tegelijk naar het slot verzendt. Daarna weer rood |
 | **Fietsen** | Status vandaag, onderhoud aan/uit, fietsen verplaatsen, laatste verplaatsingen en scans, QR-labels |
 
 Een account beheerder maken (eerst gewoon registreren op de website):

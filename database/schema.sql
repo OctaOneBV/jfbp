@@ -78,6 +78,27 @@ CREATE TABLE verplaatsingen (
   INDEX idx_verpl_fiets (fiets_id, datum)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Vrijgave van een slot door de beheerder: eenmalige openingscode die later naar het slot wordt verzonden.
+-- status: klaar = vrijgegeven (groen), verzonden = code naar slot gestuurd (gebruikt),
+--         mislukt = slot reageerde niet, ingetrokken = teruggezet naar dicht.
+CREATE TABLE slotvrijgaven (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  fiets_id       INT UNSIGNED NOT NULL,
+  locatie_id     INT UNSIGNED NOT NULL,
+  code           CHAR(6)      NOT NULL,
+  status         ENUM('klaar','verzonden','mislukt','ingetrokken') NOT NULL DEFAULT 'klaar',
+  aangemaakt_door INT UNSIGNED NULL,
+  aangemaakt_op  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  geldig_tot     DATETIME     NOT NULL,
+  afgehandeld_op DATETIME     NULL,
+  afgehandeld_door INT UNSIGNED NULL,
+  CONSTRAINT fk_vrij_fiets   FOREIGN KEY (fiets_id)   REFERENCES fietsen(id),
+  CONSTRAINT fk_vrij_locatie FOREIGN KEY (locatie_id) REFERENCES locaties(id),
+  CONSTRAINT fk_vrij_door    FOREIGN KEY (aangemaakt_door)  REFERENCES gebruikers(id) ON DELETE SET NULL,
+  CONSTRAINT fk_vrij_af      FOREIGN KEY (afgehandeld_door) REFERENCES gebruikers(id) ON DELETE SET NULL,
+  INDEX idx_vrij_status (status, fiets_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Elke scan van een barcode wordt vastgelegd, ook als het slot niet opengaat.
 CREATE TABLE scans (
   id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

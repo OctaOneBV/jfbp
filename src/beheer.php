@@ -8,6 +8,7 @@ const BEHEER_MENU = [
     'beschikbaarheid'=> ['/beheer/beschikbaarheid.php', 'Beschikbaarheid'],
     'huurders'       => ['/beheer/huurders.php', 'Huurders'],
     'statistiek'     => ['/beheer/statistiek.php', 'Statistiek'],
+    'sloten'         => ['/beheer/sloten.php', 'Sloten'],
     'fietsen'        => ['/beheer/fietsen.php', 'Fietsen'],
 ];
 

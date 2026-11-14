@@ -8,17 +8,21 @@ declare(strict_types=1);
 // worden ingevuld zodra bekend is welk slot er op de fietsen komt. Twee standen:
 //
 //  - 'simulatie': er gaat niets naar een slot, de opening wordt alleen gelogd. Voor testen.
-//  - 'webhook':   POST naar slot_webhook_url met JSON {"actie":"openen","fiets":"L-04","code":"...","tijd":"..."}
+//  - 'webhook':   POST naar slot_webhook_url met JSON
+//                 {"actie":"openen","fiets":"L-04","barcode":"...","openingscode":"123456"|null,"tijd":"..."}
 //                 en de header "Authorization: Bearer <slot_webhook_token>". Een 2xx-antwoord = geopend.
 //                 Dit is een algemeen voorbeeld; pas het aan op de API van de slotleverancier.
 
-/** @return array{ok:bool, melding:string} */
-function slot_openen(array $fiets): array
+/**
+ * @param string|null $openingscode eenmalige code uit een vrijgave door de beheerder (null bij openen door de huurder)
+ * @return array{ok:bool, melding:string}
+ */
+function slot_openen(array $fiets, ?string $openingscode = null): array
 {
     global $config;
 
     if ($config['slot_modus'] === 'simulatie') {
-        error_log('Slot (simulatie): fiets ' . $fiets['nummer'] . ' geopend');
+        error_log('Slot (simulatie): fiets ' . $fiets['nummer'] . ' geopend' . ($openingscode ? ' met openingscode' : ''));
         return ['ok' => true, 'melding' => 'Simulatie: er is geen echt slot gekoppeld.'];
     }
 
@@ -40,7 +44,8 @@ function slot_openen(array $fiets): array
         CURLOPT_POSTFIELDS => json_encode([
             'actie' => 'openen',
             'fiets' => $fiets['nummer'],
-            'code'  => $fiets['code'],
+            'barcode'      => $fiets['code'],
+            'openingscode' => $openingscode,
             'tijd'  => date(DATE_ATOM),
         ]),
     ]);

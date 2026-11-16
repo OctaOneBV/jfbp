@@ -65,8 +65,9 @@ Inloggen op `/beheer/` (alleen accounts met de rol *beheerder*; klanten krijgen 
 | **Statistiek** | Bezetting per week of maand (gerealiseerd en gepland), per weekdag, per locatie en maat, drukste dagen |
 | **Sloten** | Alle fietsen (horizontaal) × vestigingen (verticaal). Rood = dicht; klik = vrijgeven (groen) met een eenmalige openingscode (24 uur geldig), die je daarna per fiets of allemaal tegelijk naar het slot verzendt. Daarna weer rood |
 | **Fietsen** | Status vandaag, onderhoud aan/uit, fietsen verplaatsen, laatste verplaatsingen en scans, QR-labels |
+| **Beheerders** | Nieuw beheerdersaccount aanmaken, een bestaand account beheerder maken, beheerrechten intrekken (niet je eigen) |
 
-Een account beheerder maken (eerst gewoon registreren op de website):
+De eerste beheerder maak je op de commandoregel (eerst gewoon registreren op de website). Daarna kan een beheerder andere beheerders aanmaken via de pagina Beheerders.
 
     php bin/beheerder.php naam@voorbeeld.nl
 

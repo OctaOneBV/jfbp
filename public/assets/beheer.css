@@ -193,3 +193,9 @@ body.beheer{font-size:14px;line-height:1.45}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .acties{white-space:nowrap}
 .acties form{margin-right:8px}
+
+/* ---------- beheerders ---------- */
+.beheer table.smal{min-width:0}
+.beheer-form{max-width:380px;background:var(--licht);padding:12px 14px;border-radius:6px;margin-bottom:8px}
+.beheer .beheer-form label{margin-bottom:8px;font-size:13px}
+.beheer .beheer-form input{padding:6px 10px;margin-top:3px}

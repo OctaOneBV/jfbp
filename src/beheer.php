@@ -10,6 +10,7 @@ const BEHEER_MENU = [
     'statistiek'     => ['/beheer/statistiek.php', 'Statistiek'],
     'sloten'         => ['/beheer/sloten.php', 'Sloten'],
     'fietsen'        => ['/beheer/fietsen.php', 'Fietsen'],
+    'beheerders'     => ['/beheer/beheerders.php', 'Beheerders'],
 ];
 
 function beheer_kop(string $titel, string $actief, string $extra = ''): void

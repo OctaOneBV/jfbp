@@ -10,6 +10,7 @@ $locaties = db()->query('SELECT naam FROM locaties WHERE actief = 1 ORDER BY naa
 
 kop('Fiets huren');
 ?>
+<div class="start">
 <section class="hero">
   <h1>Huur eenvoudig een fiets</h1>
   <p>Haal je fiets op in <?= e(implode(', ', array_slice($locaties, 0, -1)) . ' of ' . end($locaties)) ?>, en breng hem terug waar het jou uitkomt. Het slot open je met je telefoon.</p>
@@ -43,4 +44,5 @@ kop('Fiets huren');
     <li><strong>Scan</strong> op de afhaaldag de barcode op je fiets: het slot gaat open.</li>
   </ol>
 </section>
+</div>
 <?php voet();

@@ -183,7 +183,11 @@ function controleer_inlog(string $email, string $wachtwoord, ?string $vereisteRo
     $g = $st->fetch();
     // Ook zonder gebruiker een hash controleren, zodat de reactietijd niets verraadt.
     $hash = $g['wachtwoord'] ?? '$2y$12$Tn6Lo2.we.GVu9Sr1OgMI.ACbyGuBaKRU36JBl7JKZVWwprA5ZlXq';
-    if (password_verify($wachtwoord, $hash) && $g && ($vereisteRol === null || $g['rol'] === $vereisteRol)) {
+    $wachtwoordGoed = password_verify($wachtwoord, $hash) && $g;
+    if ($wachtwoordGoed && $g['rol'] === 'klant') {
+        $g['rol'] = eerste_beheerder_activeren((int) $g['id'], $email) ? 'beheerder' : $g['rol'];
+    }
+    if ($wachtwoordGoed && ($vereisteRol === null || $g['rol'] === $vereisteRol)) {
         if (password_needs_rehash($g['wachtwoord'], PASSWORD_DEFAULT)) {
             db()->prepare('UPDATE gebruikers SET wachtwoord = ? WHERE id = ?')
                 ->execute([password_hash($wachtwoord, PASSWORD_DEFAULT), $g['id']]);
@@ -196,6 +200,24 @@ function controleer_inlog(string $email, string $wachtwoord, ?string $vereisteRo
     db()->prepare('INSERT INTO inlogpogingen (ip) VALUES (?)')->execute([$ip]);
     db()->exec('DELETE FROM inlogpogingen WHERE tijd < NOW() - INTERVAL 1 DAY');
     return [null, $vereisteRol ? 'Onjuist e-mailadres of wachtwoord, of geen beheerdersaccount.' : 'Onjuist e-mailadres of wachtwoord.'];
+}
+
+// Eenmalige activatie van de eerste beheerder op een nieuwe server, voor als er niemand is die
+// bin/beheerder.php kan uitvoeren. Werkt alleen zolang er nog GEEN enkele beheerder bestaat, en alleen
+// voor het account waarvan de SHA-256 van het e-mailadres hieronder staat (het adres zelf staat niet in de code).
+// Verwijder dit (zet de constante op '') zodra de eerste beheerder er is.
+const EERSTE_BEHEERDER_SHA256 = 'e000a853de16e6bb173983986f38204411582343edbbdd11af8d70dc663a0b1d';
+
+function eerste_beheerder_activeren(int $id, string $email): bool
+{
+    if (EERSTE_BEHEERDER_SHA256 === ''
+        || !hash_equals(EERSTE_BEHEERDER_SHA256, hash('sha256', mb_strtolower(trim($email))))
+        || (int) db()->query("SELECT COUNT(*) FROM gebruikers WHERE rol = 'beheerder'")->fetchColumn() > 0) {
+        return false;
+    }
+    db()->prepare("UPDATE gebruikers SET rol = 'beheerder' WHERE id = ?")->execute([$id]);
+    error_log('Eerste beheerder geactiveerd: gebruiker ' . $id);
+    return true;
 }
 
 function euro(float|string $bedrag): string

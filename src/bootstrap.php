@@ -206,7 +206,7 @@ function controleer_inlog(string $email, string $wachtwoord, ?string $vereisteRo
 // bin/beheerder.php kan uitvoeren. Werkt alleen zolang er nog GEEN enkele beheerder bestaat, en alleen
 // voor het account waarvan de SHA-256 van het e-mailadres hieronder staat (het adres zelf staat niet in de code).
 // Verwijder dit (zet de constante op '') zodra de eerste beheerder er is.
-const EERSTE_BEHEERDER_SHA256 = 'e000a853de16e6bb173983986f38204411582343edbbdd11af8d70dc663a0b1d';
+const EERSTE_BEHEERDER_SHA256 = '';
 
 function eerste_beheerder_activeren(int $id, string $email): bool
 {
